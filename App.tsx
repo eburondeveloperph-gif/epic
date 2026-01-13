@@ -4,20 +4,22 @@ import { PillarType, AIEngineConfig } from './types';
 import { IntelligenceModule } from './components/IntelligenceModule';
 import { SpacesModule } from './components/SpacesModule';
 import { ApexModule } from './components/ApexModule';
+import { DeploymentSandbox } from './components/DeploymentSandbox';
 import { getEPICInsights } from './services/gemini';
 
 const App: React.FC = () => {
   const [activePillar, setActivePillar] = useState<PillarType>(PillarType.INTELLIGENCE);
-  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to Ollama Cloud...");
+  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to Apex Pro...");
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDeploying, setIsDeploying] = useState(false);
 
-  // Global AI Configuration with Ollama Cloud / Gemini 3 branding
+  // Whitelabeled AI Configuration: Apex Pro (Ollama Cloud)
   const [aiConfig, setAiConfig] = useState<AIEngineConfig>({
-    brandName: "Ollama Cloud",
-    modelName: "Gemini 3 Pro",
-    provider: "Google Cloud",
+    brandName: "Apex Pro",
+    modelName: "Apex v1",
+    provider: "Ollama Cloud",
     latency: "12ms",
     status: "OPTIMAL"
   });
@@ -26,7 +28,7 @@ const App: React.FC = () => {
 
   const fetchInsights = useCallback(async () => {
     setLoadingInsights(true);
-    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}.`;
+    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: Ollama Cloud.`;
     const insights = await getEPICInsights(context);
     setAiInsights(insights || "No data synthesized.");
     setLoadingInsights(false);
@@ -53,6 +55,16 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-700 overflow-hidden font-sans ${themeClasses}`}>
+      
+      {/* Sandbox Terminal Overlay */}
+      <DeploymentSandbox 
+        isOpen={isDeploying} 
+        onClose={() => setIsDeploying(false)} 
+        brandName={aiConfig.brandName}
+        modelName={aiConfig.modelName}
+        isDarkMode={isDarkMode}
+      />
+
       {/* Mobile Top Navigation */}
       <div className={`md:hidden h-16 px-6 flex items-center justify-between sticky top-0 z-50 border-b ${isDarkMode ? 'border-white/5 bg-black/50 backdrop-blur-lg' : 'border-[#D2D2D7] bg-white/50 backdrop-blur-lg'}`}>
         <h1 className="text-xl font-black tracking-tighter">EPIC<span className="text-blue-500">OS</span></h1>
@@ -99,17 +111,17 @@ const App: React.FC = () => {
           ))}
           
           <div className="pt-10">
-            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Neural Cloud Select</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Apex Neural Select</p>
             <div className="grid grid-cols-1 gap-2">
               {[
-                { brand: "Ollama Cloud", model: "Gemini 3 Pro", prov: "Google Vertex" },
-                { brand: "Apex AI", model: "Gemini 3 Pro", prov: "Enterprise Whitelabel" },
-                { brand: "EPIC Strategy", model: "Gemini 3 Pro", prov: "Strategy Core" }
+                { brand: "Apex Pro", model: "Apex v1", prov: "Ollama Cloud" },
+                { brand: "Apex Pro", model: "Apex v2", prov: "Ollama Cloud" },
+                { brand: "Apex Pro", model: "Apex v3", prov: "Ollama Cloud" }
               ].map((engine) => (
                 <button 
-                  key={engine.brand}
+                  key={engine.model}
                   onClick={() => handleWhitelabelUpdate(engine.brand, engine.model, engine.prov)}
-                  className={`text-left p-3 rounded-xl transition-all border ${aiConfig.brandName === engine.brand ? (isDarkMode ? 'border-teal-500/40 bg-teal-500/5' : 'border-teal-500/60 bg-teal-50') : (isDarkMode ? 'border-white/5 opacity-50' : 'border-[#D2D2D7] opacity-60')}`}
+                  className={`text-left p-3 rounded-xl transition-all border ${aiConfig.modelName === engine.model ? (isDarkMode ? 'border-teal-500/40 bg-teal-500/5' : 'border-teal-500/60 bg-teal-50') : (isDarkMode ? 'border-white/5 opacity-50' : 'border-[#D2D2D7] opacity-60')}`}
                 >
                   <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{engine.brand}</p>
                   <p className="text-[8px] font-mono uppercase text-slate-500">{engine.model}</p>
@@ -145,10 +157,15 @@ const App: React.FC = () => {
               {isDarkMode ? '☀️' : '🌙'}
             </button>
             <div className="text-right">
-              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Whitelabel Engine</p>
-              <p className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.brandName}</p>
+              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Active Kernel</p>
+              <p className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.brandName} ({aiConfig.modelName})</p>
             </div>
-            <button className={`px-6 py-2.5 text-xs font-black rounded-full apple-button shadow-2xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}>DEPLOY VERCEL</button>
+            <button 
+              onClick={() => setIsDeploying(true)}
+              className={`px-6 py-2.5 text-xs font-black rounded-full apple-button shadow-2xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+            >
+              DEPLOY APEX CLOUD
+            </button>
           </div>
         </header>
 
@@ -163,10 +180,10 @@ const App: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
                   <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Synthesis</h3>
-                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Real-time organizational resilience metrics processed via neural Cloud Core.</p>
+                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Organizational resilience metrics processed via Ollama Cloud infrastructure.</p>
                 </div>
                 <button onClick={fetchInsights} disabled={loadingInsights} className={`text-[10px] font-black uppercase tracking-widest apple-button px-5 py-2.5 rounded-full border ${isDarkMode ? 'border-white/10' : 'bg-black text-white border-black'}`}>
-                  {loadingInsights ? 'CALCULATING...' : 'RE-SYNC CORE'}
+                  {loadingInsights ? 'SYNTHESIZING...' : 'RE-SYNC APEX'}
                 </button>
               </div>
               <div className="space-y-3">
@@ -181,7 +198,7 @@ const App: React.FC = () => {
           </section>
 
           <footer className="pt-10 pb-10 flex flex-col items-center gap-4 text-center opacity-30">
-            <p className="text-[9px] font-black tracking-[0.4em] uppercase">EPIC-OS // {aiConfig.brandName} // VERCEL DEPLOYMENT</p>
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // OLLAMA CLOUD // APEX CLOUD INFRASTRUCTURE</p>
           </footer>
         </div>
       </main>

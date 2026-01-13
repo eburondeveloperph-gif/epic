@@ -10,12 +10,12 @@ export const getEPICInsights = async (context: string) => {
     // Initialize the AI client with the system-provided API Key
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    // Use gemini-3-flash-preview for high-performance executive summaries
+    // Whitelabeled Persona: Apex Pro Neural Core
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [{
         parts: [{
-          text: `You are the EPIC-OS Neural Core. Analyze this multi-pillar organizational data and provide 3-4 concise executive resilience recommendations. 
+          text: `You are the Apex Pro Neural Core, powered by Ollama Cloud. Analyze this multi-pillar organizational data and provide 3-4 concise executive resilience recommendations. 
           Context includes Burnout Risk, Energy Environment, and Executive Health.
           Data Context: ${context}
           
@@ -31,9 +31,9 @@ export const getEPICInsights = async (context: string) => {
     });
 
     // Access the .text property directly as per latest SDK guidelines
-    return response.text || "Insight generation returned an empty result.";
+    return response.text || "Apex Pro insight synthesis returned null.";
   } catch (error) {
-    console.error("Neural Core Error:", error);
-    return "Neural link disrupted. Attempting to re-establish connection to Ollama/Gemini cloud nodes...";
+    console.error("Apex Pro Core Error:", error);
+    return "Neural link to Apex Pro disrupted. Attempting to re-establish connection to Ollama Cloud nodes...";
   }
 };
