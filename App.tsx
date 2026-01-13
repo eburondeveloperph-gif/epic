@@ -8,27 +8,27 @@ import { getEPICInsights } from './services/gemini';
 
 const App: React.FC = () => {
   const [activePillar, setActivePillar] = useState<PillarType>(PillarType.INTELLIGENCE);
-  const [aiInsights, setAiInsights] = useState<string>("Initializing intelligence engine...");
+  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to Ollama Cloud...");
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-  // Global AI Whitelabel Configuration
+  // Global AI Configuration with Ollama Cloud / Gemini 3 branding
   const [aiConfig, setAiConfig] = useState<AIEngineConfig>({
-    brandName: "EPIC Strategy Core",
-    modelName: "GENESIS-R1-ULTRA",
-    provider: "Gemini-3-Pro",
-    latency: "14ms",
+    brandName: "Ollama Cloud",
+    modelName: "Gemini 3 Pro",
+    provider: "Google Cloud",
+    latency: "12ms",
     status: "OPTIMAL"
   });
 
-  // DB Metadata from env context provided by user
   const DB_HOST = "aws-1-ap-south-1.pooler.supabase.co";
 
   const fetchInsights = useCallback(async () => {
     setLoadingInsights(true);
-    const context = `Pillar: ${activePillar}. AI Whitelabel: ${aiConfig.brandName} (${aiConfig.modelName}). Analyzing system-wide resilience patterns.`;
+    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}.`;
     const insights = await getEPICInsights(context);
-    setAiInsights(insights);
+    setAiInsights(insights || "No data synthesized.");
     setLoadingInsights(false);
   }, [activePillar, aiConfig]);
 
@@ -46,77 +46,73 @@ const App: React.FC = () => {
     setAiConfig(prev => ({ ...prev, brandName: brand, modelName: model, provider: provider }));
   };
 
+  const themeClasses = isDarkMode ? "bg-black text-white" : "bg-[#F5F5F7] text-[#1D1D1F]";
+  const cardClasses = isDarkMode 
+    ? "glass border-white/5 shadow-2xl" 
+    : "bg-white/80 backdrop-blur-xl border-[#D2D2D7] shadow-lg shadow-black/5";
+
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-black text-white overflow-hidden font-sans">
+    <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-700 overflow-hidden font-sans ${themeClasses}`}>
       {/* Mobile Top Navigation */}
-      <div className="md:hidden glass h-16 px-6 flex items-center justify-between sticky top-0 z-50 border-b border-white/5">
-        <div className="flex flex-col">
-          <h1 className="text-xl font-black tracking-tighter">EPIC<span className="text-blue-500">OS</span></h1>
+      <div className={`md:hidden h-16 px-6 flex items-center justify-between sticky top-0 z-50 border-b ${isDarkMode ? 'border-white/5 bg-black/50 backdrop-blur-lg' : 'border-[#D2D2D7] bg-white/50 backdrop-blur-lg'}`}>
+        <h1 className="text-xl font-black tracking-tighter">EPIC<span className="text-blue-500">OS</span></h1>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-9 h-9 flex items-center justify-center rounded-xl glass active:scale-90 transition-transform">
+            {isDarkMode ? '☀️' : '🌙'}
+          </button>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="w-9 h-9 flex flex-col items-center justify-center gap-1 glass rounded-xl">
+            <div className={`w-4 h-0.5 transition-all ${isDarkMode ? 'bg-white' : 'bg-black'} ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+            <div className={`w-4 h-0.5 transition-all ${isDarkMode ? 'bg-white' : 'bg-black'} ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
+            <div className={`w-4 h-0.5 transition-all ${isDarkMode ? 'bg-white' : 'bg-black'} ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+          </button>
         </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="w-10 h-10 glass rounded-xl flex flex-col items-center justify-center gap-1.5 active:scale-90 transition-transform apple-button"
-        >
-          <div className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
-          <div className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
-          <div className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></div>
-        </button>
       </div>
 
-      {/* Sidebar / Menu */}
+      {/* Sidebar */}
       <aside className={`
         fixed md:relative inset-0 md:inset-auto z-40 w-full md:w-80 
-        bg-black/95 md:bg-black md:glass md:border-r md:border-white/5 
-        flex flex-col p-8 md:p-10 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+        transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+        flex flex-col p-8 md:p-10 border-r
+        ${isDarkMode ? 'bg-black/95 md:bg-black glass border-white/5' : 'bg-white/95 md:bg-[#F5F5F7] border-[#D2D2D7] shadow-xl'}
         ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full md:translate-x-0 opacity-0 md:opacity-100'}
       `}>
         <div className="hidden md:block mb-12">
-          <h1 className="text-3xl font-black tracking-tighter text-white">EPIC<span className="text-blue-500">OS</span></h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            <p className="text-[9px] text-slate-500 font-black tracking-[0.3em] uppercase">Genesis v2.0</p>
-          </div>
+          <h1 className="text-3xl font-black tracking-tighter">EPIC<span className="text-blue-500">OS</span></h1>
+          <p className={`text-[9px] font-black tracking-[0.3em] uppercase mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Kernel: {aiConfig.brandName}</p>
         </div>
 
         <nav className="flex-1 space-y-4">
-          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4">Core Pillars</p>
+          <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>System Pillars</p>
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => {
-                setActivePillar(item.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative apple-button ${
+              onClick={() => { setActivePillar(item.id); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all apple-button ${
                 activePillar === item.id 
-                  ? 'bg-white/10 text-white shadow-2xl ring-1 ring-white/10' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                  ? (isDarkMode ? 'bg-white/10 text-white shadow-2xl' : 'bg-white text-[#1D1D1F] shadow-lg border border-[#D2D2D7]')
+                  : (isDarkMode ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5' : 'text-[#86868B] hover:text-[#1D1D1F] hover:bg-black/5')
               }`}
             >
-              <span className={`text-xl transition-all ${activePillar === item.id ? 'scale-110 grayscale-0' : 'grayscale opacity-40'}`}>
-                {item.icon}
-              </span>
+              <span className={`text-xl transition-all ${activePillar === item.id ? 'scale-110 grayscale-0' : 'grayscale opacity-40'}`}>{item.icon}</span>
               <span className="font-bold text-sm tracking-tight uppercase">{item.label}</span>
-              {activePillar === item.id && (
-                <div className={`ml-auto w-1 h-5 rounded-full bg-${item.color}-500 shadow-[0_0_12px_rgba(255,255,255,0.3)]`} />
-              )}
             </button>
           ))}
           
-          <div className="pt-8">
-            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-4">AI Kernel</p>
+          <div className="pt-10">
+            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Neural Cloud Select</p>
             <div className="grid grid-cols-1 gap-2">
               {[
-                { brand: "EPIC Core", model: "GEN-R1", prov: "Gemini 3 Pro" },
-                { brand: "Apex Logic", model: "AL-70B", prov: "Llama 3.1" }
+                { brand: "Ollama Cloud", model: "Gemini 3 Pro", prov: "Google Vertex" },
+                { brand: "Apex AI", model: "Gemini 3 Pro", prov: "Enterprise Whitelabel" },
+                { brand: "EPIC Strategy", model: "Gemini 3 Pro", prov: "Strategy Core" }
               ].map((engine) => (
                 <button 
                   key={engine.brand}
                   onClick={() => handleWhitelabelUpdate(engine.brand, engine.model, engine.prov)}
-                  className={`text-left p-3 rounded-xl glass transition-all apple-button border ${aiConfig.brandName === engine.brand ? 'border-teal-500/40 bg-teal-500/5' : 'border-white/5 opacity-50'}`}
+                  className={`text-left p-3 rounded-xl transition-all border ${aiConfig.brandName === engine.brand ? (isDarkMode ? 'border-teal-500/40 bg-teal-500/5' : 'border-teal-500/60 bg-teal-50') : (isDarkMode ? 'border-white/5 opacity-50' : 'border-[#D2D2D7] opacity-60')}`}
                 >
-                  <p className="text-[10px] font-bold text-white uppercase tracking-tighter">{engine.brand}</p>
-                  <p className="text-[8px] font-mono text-slate-500 uppercase">{engine.model}</p>
+                  <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{engine.brand}</p>
+                  <p className="text-[8px] font-mono uppercase text-slate-500">{engine.model}</p>
                 </button>
               ))}
             </div>
@@ -125,112 +121,67 @@ const App: React.FC = () => {
 
         <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl glass flex items-center justify-center text-xs font-black bg-gradient-to-br from-blue-600 to-indigo-700">JD</div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-lg">JD</div>
             <div>
               <p className="text-xs font-bold">Jane Doe</p>
-              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Director</p>
+              <p className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Resilience Director</p>
             </div>
           </div>
-          
-          <div className="space-y-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Database Node</span>
-              <div className="flex items-center gap-2 text-[9px] text-slate-400 font-mono truncate bg-white/5 p-2 rounded-lg border border-white/5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {DB_HOST.substring(0, 18)}...
-              </div>
-            </div>
+          <div className={`p-2 rounded-lg border text-[9px] font-mono ${isDarkMode ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-black/5 border-[#D2D2D7] text-slate-600'}`}>
+            DB: {DB_HOST.substring(0, 16)}...
           </div>
         </div>
       </aside>
 
-      {/* Main Workspace */}
-      <main className="flex-1 flex flex-col min-w-0 bg-black relative">
-        <header className="hidden md:flex h-24 border-b border-white/5 items-center justify-between px-12 shrink-0 glass sticky top-0 z-30 shadow-xl">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col relative">
+        <header className={`hidden md:flex h-24 border-b items-center justify-between px-12 sticky top-0 z-30 transition-all ${isDarkMode ? 'bg-black/40 backdrop-blur-xl border-white/5' : 'bg-white/40 backdrop-blur-xl border-[#D2D2D7]'}`}>
           <div className="flex items-center gap-4">
-            <div className={`w-1 h-8 rounded-full ${
-              activePillar === PillarType.INTELLIGENCE ? 'bg-blue-500' : 
-              activePillar === PillarType.SPACES ? 'bg-amber-500' : 'bg-teal-500'
-            }`} />
-            <div>
-              <h2 className="text-xl font-black tracking-tight uppercase">
-                {activePillar === PillarType.INTELLIGENCE ? 'Intelligence Node' : 
-                 activePillar === PillarType.SPACES ? 'Spaces OS' : 
-                 'Apex Performance'}
-              </h2>
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em]">{aiConfig.brandName} Synthesis</p>
-            </div>
+            <div className={`w-1 h-6 rounded-full ${activePillar === PillarType.INTELLIGENCE ? 'bg-blue-500' : activePillar === PillarType.SPACES ? 'bg-amber-500' : 'bg-teal-500'}`} />
+            <h2 className="text-xl font-black uppercase tracking-tight">{activePillar} OS</h2>
           </div>
-
-          <div className="flex items-center gap-8">
-            <div className="hidden lg:flex flex-col text-right">
-              <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">AI Protocol</span>
-              <span className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.modelName}</span>
-            </div>
-            <button className="px-6 py-2.5 bg-white text-black text-xs font-black rounded-full hover:bg-slate-200 apple-button shadow-2xl transition-all">
-              EXTRACT DATA
+          <div className="flex items-center gap-6">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-lg transition-all ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}>
+              {isDarkMode ? '☀️' : '🌙'}
             </button>
+            <div className="text-right">
+              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Whitelabel Engine</p>
+              <p className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.brandName}</p>
+            </div>
+            <button className={`px-6 py-2.5 text-xs font-black rounded-full apple-button shadow-2xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}>DEPLOY VERCEL</button>
           </div>
         </header>
 
-        {/* Dynamic Pillar Content */}
         <div className="flex-1 overflow-y-auto px-6 py-8 md:p-12 space-y-12">
-          {activePillar === PillarType.INTELLIGENCE && <IntelligenceModule />}
-          {activePillar === PillarType.SPACES && <SpacesModule />}
-          {activePillar === PillarType.APEX && <ApexModule activeEngine={aiConfig} />}
+          {activePillar === PillarType.INTELLIGENCE && <IntelligenceModule isDarkMode={isDarkMode} />}
+          {activePillar === PillarType.SPACES && <SpacesModule isDarkMode={isDarkMode} />}
+          {activePillar === PillarType.APEX && <ApexModule activeEngine={aiConfig} isDarkMode={isDarkMode} />}
 
-          {/* AI Strategy Bar */}
-          <section className="glass rounded-[3rem] p-8 md:p-12 relative overflow-hidden group shadow-2xl border-white/5">
-            <div className="flex flex-col lg:flex-row items-start gap-10 relative z-10">
-              <div className="w-16 h-16 rounded-[1.5rem] glass flex items-center justify-center shrink-0 shadow-2xl bg-gradient-to-br from-indigo-500/10 to-transparent">
-                <span className="text-2xl">✨</span>
+          {/* AI Strategy Insights */}
+          <section className={`rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden transition-all duration-1000 ${cardClasses}`}>
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Synthesis</h3>
+                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Real-time organizational resilience metrics processed via neural Cloud Core.</p>
+                </div>
+                <button onClick={fetchInsights} disabled={loadingInsights} className={`text-[10px] font-black uppercase tracking-widest apple-button px-5 py-2.5 rounded-full border ${isDarkMode ? 'border-white/10' : 'bg-black text-white border-black'}`}>
+                  {loadingInsights ? 'CALCULATING...' : 'RE-SYNC CORE'}
+                </button>
               </div>
-              
-              <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-                  <div>
-                    <h3 className="text-3xl font-black tracking-tight text-white mb-1">{aiConfig.brandName}</h3>
-                    <p className="text-slate-500 font-medium text-base italic leading-relaxed">Cross-pillar strategic synthesis processed via neural kernel.</p>
+              <div className="space-y-3">
+                {aiInsights.split('\n').filter(l => l.trim()).map((line, idx) => (
+                  <div key={idx} className={`flex gap-4 items-center p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-[#D2D2D7] hover:border-indigo-300'}`}>
+                    <div className="w-1 h-6 bg-blue-500 rounded-full shrink-0" />
+                    <p className={`text-sm font-semibold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-[#1D1D1F]'}`}>{line.replace(/^[\*\-\s\d\.]+/, '').trim()}</p>
                   </div>
-                  <button 
-                    onClick={fetchInsights}
-                    disabled={loadingInsights}
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-white apple-button glass px-5 py-2.5 rounded-full border-white/10"
-                  >
-                    {loadingInsights ? 'CALCULATING...' : 'SYNC AI'}
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-4">
-                  {loadingInsights ? (
-                    <div className="space-y-4">
-                      <div className="h-6 bg-white/5 rounded-2xl animate-pulse w-full" />
-                      <div className="h-6 bg-white/5 rounded-2xl animate-pulse w-3/4" />
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {aiInsights.split('\n').filter(line => line.trim()).map((line, idx) => (
-                        <div key={idx} className="flex gap-6 text-slate-300 items-center p-6 glass rounded-[1.5rem] hover:bg-white/5 transition-all duration-300 group/item border-white/5">
-                          <div className="w-1 h-8 bg-indigo-500 rounded-full group-hover/item:scale-y-125 transition-transform" />
-                          <p className="text-sm md:text-base font-semibold leading-relaxed tracking-tight">
-                            {line.replace(/^[\*\-\s\d\.]+/, '').trim()}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
             </div>
           </section>
 
-          <footer className="pt-20 pb-10 flex flex-col items-center gap-4 text-center opacity-40">
-            <p className="text-[9px] font-black tracking-[0.5em] uppercase text-slate-600">
-              EPIC-OS / GENESIS v2.0
-            </p>
-            <div className="text-[8px] font-mono text-slate-800 uppercase tracking-tighter">
-              NODE: {DB_HOST} // STATUS: STABLE
-            </div>
+          <footer className="pt-10 pb-10 flex flex-col items-center gap-4 text-center opacity-30">
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase">EPIC-OS // {aiConfig.brandName} // VERCEL DEPLOYMENT</p>
           </footer>
         </div>
       </main>

@@ -4,40 +4,56 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tool
 import { generateEnergyData } from '../services/mockData';
 import { EnergyMetrics } from '../types';
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  isDarkMode?: boolean;
+}
+
+const CustomTooltip = ({ active, payload, label, isDarkMode = true }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
+    const gridValue = payload.find(p => p.dataKey === 'Grid')?.value || 0;
+    const solarValue = payload.find(p => p.dataKey === 'Solar')?.value || 0;
+    const total = gridValue + solarValue;
+
     return (
-      <div className="glass p-4 rounded-2xl min-w-[220px] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">Telemetry</span>
-          <span className="text-[10px] font-bold text-white font-mono">{label}</span>
+      <div className={`p-4 rounded-2xl min-w-[240px] shadow-2xl animate-in fade-in zoom-in-95 duration-200 border transition-colors ${isDarkMode ? 'glass border-white/5' : 'bg-white/95 backdrop-blur-xl border-[#D2D2D7] shadow-black/10'}`}>
+        <div className="flex justify-between items-center mb-3 border-b border-gray-200 dark:border-white/5 pb-2">
+          <span className={`text-[10px] font-black uppercase tracking-widest font-mono ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data Log</span>
+          <span className={`text-[10px] font-bold font-mono ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{label}</span>
         </div>
-        <div className="space-y-3">
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-1.5 h-1.5 rounded-full" 
-                  style={{ backgroundColor: entry.color }} 
-                />
-                <span className="text-xs font-semibold text-slate-300">{entry.name}</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-sm font-black text-white font-mono">
-                  {entry.value.toFixed(2)}
-                </span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">kW</span>
-              </div>
+        
+        <div className="space-y-4">
+          <div className="flex justify-between items-center group">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#475569]" />
+              <span className={`text-xs font-semibold ${isDarkMode ? 'text-slate-300' : 'text-[#424245]'}`}>Grid Usage</span>
             </div>
-          ))}
+            <div className="flex items-baseline gap-1">
+              <span className={`text-sm font-black font-mono ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{gridValue.toFixed(2)}</span>
+              <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>kW</span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center group">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#FBBF24]" />
+              <span className={`text-xs font-semibold ${isDarkMode ? 'text-slate-300' : 'text-[#424245]'}`}>Solar Yield</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-sm font-black font-mono ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{solarValue.toFixed(2)}</span>
+              <span className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>kW</span>
+            </div>
+          </div>
           
-          <div className="pt-3 mt-1 border-t border-white/5 flex flex-col gap-1">
+          <div className={`pt-3 mt-1 border-t flex flex-col gap-1.5 ${isDarkMode ? 'border-white/5' : 'border-[#D2D2D7]'}`}>
             <div className="flex justify-between items-center">
-              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Stability Index</span>
-              <span className="text-[10px] text-emerald-400 font-black">99.4%</span>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total Load</span>
+              <span className={`text-xs font-black font-mono ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{total.toFixed(2)} kW</span>
             </div>
-            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mt-1">
-               <div className="bg-emerald-500 h-full w-[99.4%]" />
+            <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+               <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: '99.4%' }} />
             </div>
           </div>
         </div>
@@ -47,7 +63,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export const SpacesModule: React.FC = () => {
+interface SpacesModuleProps {
+  isDarkMode?: boolean;
+}
+
+export const SpacesModule: React.FC<SpacesModuleProps> = ({ isDarkMode = true }) => {
   const [metrics, setMetrics] = useState<EnergyMetrics>(generateEnergyData());
   const [history, setHistory] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -68,12 +88,10 @@ export const SpacesModule: React.FC = () => {
   const handleManualRefresh = () => {
     setIsRefreshing(true);
     updateData();
-    // Brief delay for visual feedback
     setTimeout(() => setIsRefreshing(false), 800);
   };
 
   useEffect(() => {
-    // Populate some initial points for a fuller chart
     const initialPoints = Array.from({ length: 20 }).map((_, i) => {
       const d = new Date();
       d.setSeconds(d.getSeconds() - (20 - i) * 3);
@@ -96,6 +114,10 @@ export const SpacesModule: React.FC = () => {
   ];
   const COLORS = ['#475569', '#FBBF24'];
 
+  const cardClasses = isDarkMode 
+    ? "glass border-white/5" 
+    : "bg-white border-[#D2D2D7] shadow-sm shadow-black/5";
+
   return (
     <div className="space-y-6 md:space-y-10 animate-in slide-in-from-bottom-8 duration-700 ease-out">
       {/* Module Header */}
@@ -103,12 +125,12 @@ export const SpacesModule: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
              <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-blue-400 animate-ping' : 'bg-amber-500 animate-pulse'}`} />
-             <span className={`text-[10px] font-black uppercase tracking-[0.3em] transition-colors ${isRefreshing ? 'text-blue-400' : 'text-amber-500'}`}>
+             <span className={`text-[10px] font-black uppercase tracking-[0.3em] transition-colors ${isRefreshing ? 'text-blue-400' : (isDarkMode ? 'text-amber-500' : 'text-amber-600')}`}>
                 {isRefreshing ? 'Synchronizing Node...' : 'Live Environment Monitor'}
              </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">Energy OS</h2>
-          <p className="text-slate-500 text-sm md:text-base font-medium max-w-md">
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">Energy OS</h2>
+          <p className={`text-sm md:text-base font-medium max-w-md ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
             Advanced solar harvesting and grid stability metrics for Equilibrium Partners hubs.
           </p>
         </div>
@@ -117,21 +139,21 @@ export const SpacesModule: React.FC = () => {
           <button 
             onClick={handleManualRefresh}
             disabled={isRefreshing}
-            className="apple-button glass px-6 py-3 rounded-2xl flex items-center gap-3 hover:bg-white/10 active:scale-95 transition-all disabled:opacity-50"
+            className={`apple-button px-6 py-3 rounded-2xl flex items-center gap-3 active:scale-95 transition-all disabled:opacity-50 border ${isDarkMode ? 'glass border-white/10 hover:bg-white/10' : 'bg-white border-[#D2D2D7] hover:bg-gray-50'}`}
           >
             <span className={`text-sm transition-transform duration-500 ${isRefreshing ? 'rotate-180' : ''}`}>🔄</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">Manual Refresh</span>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>Manual Refresh</span>
           </button>
 
-          <div className="glass px-5 py-3 rounded-2xl flex items-center gap-4">
+          <div className={`px-5 py-3 rounded-2xl flex items-center gap-4 border ${isDarkMode ? 'glass border-white/10' : 'bg-white border-[#D2D2D7]'}`}>
             <div className="text-right">
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Efficiency</p>
-              <p className="text-sm font-bold text-emerald-400">98.2%</p>
+              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Efficiency</p>
+              <p className="text-sm font-bold text-emerald-500">98.2%</p>
             </div>
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className={`h-8 w-[1px] ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
             <div className="text-right">
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Savings</p>
-              <p className="text-sm font-bold text-white">+{metrics.savingsPerHour.toFixed(2)}/h</p>
+              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Savings</p>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>+{metrics.savingsPerHour.toFixed(2)}/h</p>
             </div>
           </div>
         </div>
@@ -140,16 +162,16 @@ export const SpacesModule: React.FC = () => {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[
-          { label: 'Storage', value: `${metrics.batteryLevel}%`, sub: 'Li-Ion Normal', color: 'text-emerald-400', icon: '🔋' },
-          { label: 'Harvest', value: `${metrics.solarUsage.toFixed(1)}`, sub: 'Peak kW', color: 'text-amber-400', icon: '☀️' },
-          { label: 'Air CO2', value: `${metrics.co2Level.toFixed(0)}`, sub: 'PPM Density', color: metrics.co2Level > 800 ? 'text-red-400' : 'text-blue-400', icon: '🌬️' },
-          { label: 'Luminosity', value: `${metrics.lux.toFixed(0)}`, sub: 'Lux Sync', color: 'text-indigo-400', icon: '💡' }
+          { label: 'Storage', value: `${metrics.batteryLevel}%`, sub: 'Li-Ion Normal', color: isDarkMode ? 'text-emerald-400' : 'text-emerald-600', icon: '🔋' },
+          { label: 'Harvest', value: `${metrics.solarUsage.toFixed(1)}`, sub: 'Peak kW', color: isDarkMode ? 'text-amber-400' : 'text-amber-600', icon: '☀️' },
+          { label: 'Air CO2', value: `${metrics.co2Level.toFixed(0)}`, sub: 'PPM Density', color: metrics.co2Level > 800 ? (isDarkMode ? 'text-red-400' : 'text-red-600') : (isDarkMode ? 'text-blue-400' : 'text-blue-600'), icon: '🌬️' },
+          { label: 'Luminosity', value: `${metrics.lux.toFixed(0)}`, sub: 'Lux Sync', color: isDarkMode ? 'text-indigo-400' : 'text-indigo-600', icon: '💡' }
         ].map((stat, idx) => (
-          <div key={idx} className="glass p-6 rounded-[2rem] relative overflow-hidden group active:scale-95 transition-all duration-300">
+          <div key={idx} className={`p-6 rounded-[2rem] relative overflow-hidden group active:scale-95 transition-all duration-300 border ${cardClasses}`}>
             <span className="absolute top-4 right-6 text-xl opacity-30 group-hover:opacity-100 transition-opacity">{stat.icon}</span>
-            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">{stat.label}</p>
+            <p className={`text-[10px] uppercase font-black tracking-widest mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{stat.label}</p>
             <p className={`text-2xl md:text-3xl font-black tracking-tighter ${stat.color}`}>{stat.value}</p>
-            <p className="text-[9px] text-slate-600 font-bold uppercase mt-2 tracking-widest">{stat.sub}</p>
+            <p className={`text-[9px] font-bold uppercase mt-2 tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-500'}`}>{stat.sub}</p>
           </div>
         ))}
       </div>
@@ -157,20 +179,20 @@ export const SpacesModule: React.FC = () => {
       {/* Charts Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Load Area Chart */}
-        <div className="lg:col-span-2 glass p-6 md:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+        <div className={`lg:col-span-2 p-6 md:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden border ${cardClasses}`}>
           <div className="flex justify-between items-center mb-10">
             <div>
-               <h3 className="text-xl font-bold tracking-tight text-white">Load Balancing</h3>
-               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Real-time source distribution</p>
+               <h3 className="text-xl font-bold tracking-tight">Load Balancing</h3>
+               <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Real-time source distribution</p>
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Grid</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#475569]" />
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Grid</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Solar</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FBBF24]" />
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-amber-500' : 'text-amber-600'}`}>Solar</span>
               </div>
             </div>
           </div>
@@ -180,23 +202,26 @@ export const SpacesModule: React.FC = () => {
               <AreaChart data={history} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorGrid" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#475569" stopOpacity={0.2}/>
+                    <stop offset="5%" stopColor="#475569" stopOpacity={isDarkMode ? 0.2 : 0.1}/>
                     <stop offset="95%" stopColor="#475569" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorSolar" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FBBF24" stopOpacity={0.4}/>
+                    <stop offset="5%" stopColor="#FBBF24" stopOpacity={isDarkMode ? 0.4 : 0.2}/>
                     <stop offset="95%" stopColor="#FBBF24" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.02)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)"} vertical={false} />
                 <XAxis dataKey="time" hide />
                 <YAxis 
-                  stroke="rgba(255,255,255,0.2)" 
+                  stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#475569' }} 
+                  tick={{ fontSize: 10, fontWeight: 700, fill: isDarkMode ? '#475569' : '#86868B' }} 
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                <Tooltip 
+                  content={<CustomTooltip isDarkMode={isDarkMode} />} 
+                  cursor={{ stroke: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }} 
+                />
                 <Area 
                   type="monotone" 
                   dataKey="Grid" 
@@ -223,10 +248,10 @@ export const SpacesModule: React.FC = () => {
         </div>
 
         {/* Source Mix Donut */}
-        <div className="glass p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-center">
+        <div className={`p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-center border ${cardClasses}`}>
           <div className="w-full text-left mb-6">
-             <h3 className="text-xl font-bold text-white">Current Mix</h3>
-             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Source weighting</p>
+             <h3 className="text-xl font-bold">Current Mix</h3>
+             <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Source weighting</p>
           </div>
           
           <div className="h-[250px] w-full relative group">
@@ -250,30 +275,30 @@ export const SpacesModule: React.FC = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#1c1c1e', border: 'none', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }} />
+                <Tooltip contentStyle={{ background: isDarkMode ? '#1c1c1e' : '#FFFFFF', border: 'none', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
               </PieChart>
             </ResponsiveContainer>
             
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-500 mb-1">Solar</span>
-              <span className="text-4xl font-black text-amber-400 tracking-tighter">
+              <span className={`text-[9px] font-black uppercase tracking-[0.4em] mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Solar Mix</span>
+              <span className={`text-4xl font-black tracking-tighter ${isDarkMode ? 'text-amber-400' : 'text-amber-500'}`}>
                 {((metrics.solarUsage / (metrics.solarUsage + metrics.gridUsage)) * 100).toFixed(0)}%
               </span>
             </div>
           </div>
 
           <div className="mt-10 space-y-3 w-full">
-            <div className="glass bg-white/[0.02] p-4 rounded-2xl flex justify-between items-center hover:bg-white/5 transition-colors">
-              <span className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-600" /> Grid
+            <div className={`p-4 rounded-2xl flex justify-between items-center transition-colors border ${isDarkMode ? 'bg-white/[0.02] border-white/5 hover:bg-white/5' : 'bg-gray-50 border-[#D2D2D7] hover:bg-gray-100'}`}>
+              <span className={`flex items-center gap-3 text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#475569]" /> Grid Source
               </span>
-              <span className="font-mono text-sm font-black text-white">{metrics.gridUsage.toFixed(1)} kW</span>
+              <span className={`font-mono text-sm font-black ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{metrics.gridUsage.toFixed(1)} kW</span>
             </div>
-            <div className="glass bg-white/[0.02] p-4 rounded-2xl flex justify-between items-center hover:bg-white/5 transition-colors">
-              <span className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> Solar
+            <div className={`p-4 rounded-2xl flex justify-between items-center transition-colors border ${isDarkMode ? 'bg-white/[0.02] border-white/5 hover:bg-white/5' : 'bg-gray-50 border-[#D2D2D7] hover:bg-gray-100'}`}>
+              <span className={`flex items-center gap-3 text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FBBF24] shadow-[0_0_8px_rgba(251,191,36,0.3)]" /> Solar Output
               </span>
-              <span className="font-mono text-sm font-black text-amber-400">{metrics.solarUsage.toFixed(1)} kW</span>
+              <span className={`font-mono text-sm font-black ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>{metrics.solarUsage.toFixed(1)} kW</span>
             </div>
           </div>
         </div>
