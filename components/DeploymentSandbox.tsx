@@ -11,7 +11,7 @@ interface DeploymentSandboxProps {
 
 const getLogMessages = (brand: string, model: string) => [
   `Initializing ${brand} Sandbox Environment...`,
-  "Authenticating with Ollama Cloud nodes...",
+  "Authenticating with WCX CLOUD SERVER nodes...",
   `Provisioning ${model} reasoning engine...`,
   "Allocating neural compute shaders...",
   "Syncing Edge DB: aws-1-ap-south-1.pooler.supabase.co",

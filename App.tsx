@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PillarType, AIEngineConfig } from './types';
 import { IntelligenceModule } from './components/IntelligenceModule';
 import { SpacesModule } from './components/SpacesModule';
@@ -9,17 +9,20 @@ import { getEPICInsights } from './services/gemini';
 
 const App: React.FC = () => {
   const [activePillar, setActivePillar] = useState<PillarType>(PillarType.INTELLIGENCE);
-  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to Apex Pro...");
+  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to WCX CLOUD SERVER...");
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  
+  const loadingRef = useRef(false);
 
-  // Whitelabeled AI Configuration: Apex Pro (Ollama Cloud)
+  // Whitelabeled AI Configuration: Apex Pro (WCX CLOUD SERVER / OLLAMA cloud engine)
   const [aiConfig, setAiConfig] = useState<AIEngineConfig>({
     brandName: "Apex Pro",
-    modelName: "Apex v1",
-    provider: "Ollama Cloud",
+    modelName: "Apex v1 (Gemini 3 Pro)",
+    provider: "WCX CLOUD SERVER",
     latency: "12ms",
     status: "OPTIMAL"
   });
@@ -27,16 +30,35 @@ const App: React.FC = () => {
   const DB_HOST = "aws-1-ap-south-1.pooler.supabase.co";
 
   const fetchInsights = useCallback(async () => {
+    if (loadingRef.current || cooldown > 0) return;
+    
+    loadingRef.current = true;
     setLoadingInsights(true);
-    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: Ollama Cloud.`;
+    
+    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: WCX CLOUD SERVER / OLLAMA Cloud.`;
     const insights = await getEPICInsights(context);
+    
     setAiInsights(insights || "No data synthesized.");
     setLoadingInsights(false);
-  }, [activePillar, aiConfig]);
+    loadingRef.current = false;
+
+    // Trigger cooldown if quota error detected
+    if (insights.includes('QUOTA EXHAUSTED')) {
+      setCooldown(30);
+    }
+  }, [activePillar, aiConfig, cooldown]);
 
   useEffect(() => {
     fetchInsights();
-  }, [fetchInsights]);
+  }, [activePillar]);
+
+  // Cooldown timer logic
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const navItems = [
     { id: PillarType.INTELLIGENCE, label: 'Intelligence', icon: '🧠', color: 'blue' },
@@ -45,7 +67,13 @@ const App: React.FC = () => {
   ];
 
   const handleWhitelabelUpdate = (brand: string, model: string, provider: string) => {
-    setAiConfig(prev => ({ ...prev, brandName: brand, modelName: model, provider: provider }));
+    setAiConfig(prev => ({ 
+      ...prev, 
+      brandName: brand, 
+      modelName: model, 
+      provider: provider,
+      latency: `${Math.floor(Math.random() * 5) + 8}ms` 
+    }));
   };
 
   const themeClasses = isDarkMode ? "bg-black text-white" : "bg-[#F5F5F7] text-[#1D1D1F]";
@@ -114,9 +142,9 @@ const App: React.FC = () => {
             <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Apex Neural Select</p>
             <div className="grid grid-cols-1 gap-2">
               {[
-                { brand: "Apex Pro", model: "Apex v1", prov: "Ollama Cloud" },
-                { brand: "Apex Pro", model: "Apex v2", prov: "Ollama Cloud" },
-                { brand: "Apex Pro", model: "Apex v3", prov: "Ollama Cloud" }
+                { brand: "Apex Pro", model: "Apex v1 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" },
+                { brand: "Apex Pro", model: "Apex v2 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" },
+                { brand: "Apex Pro", model: "Apex v3 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" }
               ].map((engine) => (
                 <button 
                   key={engine.model}
@@ -164,7 +192,7 @@ const App: React.FC = () => {
               onClick={() => setIsDeploying(true)}
               className={`px-6 py-2.5 text-xs font-black rounded-full apple-button shadow-2xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
             >
-              DEPLOY APEX CLOUD
+              DEPLOY WCX CLOUD
             </button>
           </div>
         </header>
@@ -180,25 +208,44 @@ const App: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
                   <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Synthesis</h3>
-                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Organizational resilience metrics processed via Ollama Cloud infrastructure.</p>
+                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Resilience modeling via OLLAMA cloud engine on WCX nodes.</p>
                 </div>
-                <button onClick={fetchInsights} disabled={loadingInsights} className={`text-[10px] font-black uppercase tracking-widest apple-button px-5 py-2.5 rounded-full border ${isDarkMode ? 'border-white/10' : 'bg-black text-white border-black'}`}>
-                  {loadingInsights ? 'SYNTHESIZING...' : 'RE-SYNC APEX'}
+                <button 
+                  onClick={fetchInsights} 
+                  disabled={loadingInsights || cooldown > 0} 
+                  className={`text-[10px] font-black uppercase tracking-widest apple-button px-5 py-2.5 rounded-full border transition-all ${
+                    loadingInsights || cooldown > 0
+                      ? (isDarkMode ? 'border-white/20 text-slate-500' : 'border-slate-200 text-slate-400') 
+                      : (isDarkMode ? 'bg-white text-black border-white hover:scale-105' : 'bg-black text-white border-black hover:scale-105')
+                  }`}
+                >
+                  {loadingInsights ? 'SYNTHESIZING...' : cooldown > 0 ? `COOLING DOWN (${cooldown}s)` : 'RE-SYNC APEX'}
                 </button>
               </div>
               <div className="space-y-3">
-                {aiInsights.split('\n').filter(l => l.trim()).map((line, idx) => (
-                  <div key={idx} className={`flex gap-4 items-center p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-[#D2D2D7] hover:border-indigo-300'}`}>
-                    <div className="w-1 h-6 bg-blue-500 rounded-full shrink-0" />
-                    <p className={`text-sm font-semibold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-[#1D1D1F]'}`}>{line.replace(/^[\*\-\s\d\.]+/, '').trim()}</p>
-                  </div>
-                ))}
+                {aiInsights.split('\n').filter(l => l.trim()).map((line, idx) => {
+                  const isError = line.includes('QUOTA') || line.includes('EXHAUSTED') || line.includes('exhausted');
+                  return (
+                    <div key={idx} className={`flex gap-4 items-center p-5 rounded-2xl border transition-all ${
+                      isError 
+                        ? (isDarkMode ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200')
+                        : (isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-[#D2D2D7] hover:border-indigo-300 shadow-sm')
+                    }`}>
+                      <div className={`w-1 h-6 rounded-full shrink-0 ${isError ? 'bg-red-500' : 'bg-blue-500'}`} />
+                      <p className={`text-sm font-semibold leading-relaxed ${
+                        isError 
+                          ? (isDarkMode ? 'text-red-400' : 'text-red-700') 
+                          : (isDarkMode ? 'text-slate-300' : 'text-[#1D1D1F]')
+                      }`}>{line.replace(/^[\*\-\s\d\.]+/, '').trim()}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </section>
 
           <footer className="pt-10 pb-10 flex flex-col items-center gap-4 text-center opacity-30">
-            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // OLLAMA CLOUD // APEX CLOUD INFRASTRUCTURE</p>
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // WCX CLOUD SERVER // OLLAMA ENGINE INFRASTRUCTURE</p>
           </footer>
         </div>
       </main>
