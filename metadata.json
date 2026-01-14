@@ -1,5 +1,7 @@
 {
-  "name": "EPIC-OS / GENESIS v2.0",
-  "description": "Unified Resilience-as-a-Service ecosystem powered by WCX CLOUD SERVER and Gemini 3. Real-time predictive analytics for executive high-performance and organizational stability.",
-  "requestFramePermissions": []
+  "name": "EPIC-OS / GENESIS (Apex Edition)",
+  "description": "Unified Resilience-as-a-Service ecosystem powered by WCX CLOUD SERVER and Apex Pro Sovereign Logic.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

@@ -1,0 +1,32 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --apple-bg: #000000;
+  --apple-card: rgba(28, 28, 30, 0.7);
+  --apple-border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background-color: var(--apple-bg);
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass {
+  background: var(--apple-card);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--apple-border);
+}
+
+.apple-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-button:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}

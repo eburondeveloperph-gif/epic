@@ -1,5 +1,5 @@
 {
-  "name": "epic-os-/-genesis-v2.0",
+  "name": "epic-os-/-genesis-(apex-edition)",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,9 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "recharts": "^3.6.0",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "recharts": "^3.6.0",
+    "tailwindcss": "^4.1.18",
+    "next": "^16.1.1",
     "@google/genai": "^1.35.0"
   },
   "devDependencies": {
