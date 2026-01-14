@@ -9,7 +9,7 @@ import { getEPICInsights } from './services/gemini';
 
 const App: React.FC = () => {
   const [activePillar, setActivePillar] = useState<PillarType>(PillarType.INTELLIGENCE);
-  const [aiInsights, setAiInsights] = useState<string>("Initializing neural link to WCX CLOUD SERVER...");
+  const [aiInsights, setAiInsights] = useState<string>("Establishing secure link to Apex Core...");
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -21,13 +21,11 @@ const App: React.FC = () => {
   // Whitelabeled AI Configuration: Apex Pro (WCX CLOUD SERVER)
   const [aiConfig, setAiConfig] = useState<AIEngineConfig>({
     brandName: "Apex Pro",
-    modelName: "Apex v1 (Gemini 3 Pro)",
-    provider: "WCX CLOUD SERVER",
+    modelName: "Core v1 Standard",
+    provider: "WCX Neural Fabric",
     latency: "12ms",
     status: "OPTIMAL"
   });
-
-  const DB_HOST = "aws-1-ap-south-1.pooler.supabase.co";
 
   const fetchInsights = useCallback(async () => {
     if (loadingRef.current || cooldown > 0) return;
@@ -35,29 +33,32 @@ const App: React.FC = () => {
     loadingRef.current = true;
     setLoadingInsights(true);
     
-    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: WCX CLOUD SERVER (OLLAMA Cloud).`;
+    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: WCX Secure Offloading.`;
     const insights = await getEPICInsights(context);
     
-    setAiInsights(insights || "No data synthesized.");
+    setAiInsights(insights || "No strategic data synthesized.");
     setLoadingInsights(false);
     loadingRef.current = false;
 
-    // Trigger cooldown if quota error detected
-    if (insights.includes('QUOTA EXHAUSTED')) {
-      setCooldown(30);
+    // Trigger cooldown if quota error detected in the response
+    if (insights.includes('SYSTEM STATUS')) {
+      setCooldown(60);
     }
   }, [activePillar, aiConfig, cooldown]);
 
   useEffect(() => {
     fetchInsights();
-  }, [activePillar, aiConfig.modelName]); // Re-fetch when pillar or engine changes
+  }, [activePillar, aiConfig.modelName]);
 
   // Cooldown timer logic
   useEffect(() => {
+    let timer: number;
     if (cooldown > 0) {
-      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
-      return () => clearTimeout(timer);
+      timer = window.setInterval(() => {
+        setCooldown(prev => Math.max(0, prev - 1));
+      }, 1000);
     }
+    return () => clearInterval(timer);
   }, [cooldown]);
 
   const navItems = [
@@ -72,7 +73,7 @@ const App: React.FC = () => {
       brandName: brand, 
       modelName: model, 
       provider: provider,
-      latency: model.includes('v3') ? '185ms' : '12ms' // v3 is high-reasoning, higher latency
+      latency: model.includes('v3') ? '240ms' : '12ms'
     }));
   };
 
@@ -139,12 +140,12 @@ const App: React.FC = () => {
           ))}
           
           <div className="pt-10">
-            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Apex Neural Select</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Neural Logic Core</p>
             <div className="grid grid-cols-1 gap-2">
               {[
-                { brand: "Apex Pro", model: "Apex v1 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" },
-                { brand: "Apex Pro", model: "Apex v2 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" },
-                { brand: "Apex Pro", model: "Apex v3 (Gemini 3 Pro)", prov: "WCX CLOUD SERVER" }
+                { brand: "Apex Pro", model: "Core v1 Standard", prov: "WCX Neural Fabric" },
+                { brand: "Apex Pro", model: "Core v2 Advanced", prov: "WCX Neural Fabric" },
+                { brand: "Apex Pro", model: "Core v3 Sovereign", prov: "WCX Neural Fabric" }
               ].map((engine) => (
                 <button 
                   key={engine.model}
@@ -153,7 +154,7 @@ const App: React.FC = () => {
                 >
                   <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{engine.brand}</p>
                   <p className="text-[8px] font-mono uppercase text-slate-500">{engine.model}</p>
-                  {engine.model.includes('v3') && <span className="text-[7px] font-black text-teal-400 uppercase tracking-widest mt-1 block">Thinking Enabled</span>}
+                  {engine.model.includes('v3') && <span className="text-[7px] font-black text-teal-400 uppercase tracking-widest mt-1 block">Deep Reasoning Mode</span>}
                 </button>
               ))}
             </div>
@@ -169,7 +170,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className={`p-2 rounded-lg border text-[9px] font-mono ${isDarkMode ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-black/5 border-[#D2D2D7] text-slate-600'}`}>
-            WCX: {aiConfig.latency} // CLOUD_SYNC
+            EPIC_LINK: {aiConfig.latency}
           </div>
         </div>
       </aside>
@@ -186,14 +187,14 @@ const App: React.FC = () => {
               {isDarkMode ? '☀️' : '🌙'}
             </button>
             <div className="text-right">
-              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Active Kernel</p>
-              <p className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.brandName} ({aiConfig.modelName})</p>
+              <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Secure Kernel</p>
+              <p className="text-[10px] font-mono font-bold text-emerald-400">{aiConfig.brandName} // PRIVATE_CLOUD</p>
             </div>
             <button 
               onClick={() => setIsDeploying(true)}
               className={`px-6 py-2.5 text-xs font-black rounded-full apple-button shadow-2xl ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
             >
-              DEPLOY WCX CLOUD
+              SYNC WCX NODES
             </button>
           </div>
         </header>
@@ -208,8 +209,8 @@ const App: React.FC = () => {
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Synthesis</h3>
-                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Resilience modeling via OLLAMA Cloud on WCX nodes.</p>
+                  <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Analysis</h3>
+                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Organizational resilience modeling via private infrastructure.</p>
                 </div>
                 <button 
                   onClick={fetchInsights} 
@@ -220,7 +221,7 @@ const App: React.FC = () => {
                       : (isDarkMode ? 'bg-white text-black border-white hover:scale-105' : 'bg-black text-white border-black hover:scale-105')
                   }`}
                 >
-                  {loadingInsights ? 'SYNTHESIZING...' : cooldown > 0 ? `COOLING DOWN (${cooldown}s)` : 'RE-SYNC APEX'}
+                  {loadingInsights ? 'SYNTHESIZING...' : (cooldown > 0 ? `COOLING DOWN (${cooldown}s)` : 'RE-SYNC CORE')}
                 </button>
               </div>
               <div className="space-y-3">
@@ -246,7 +247,7 @@ const App: React.FC = () => {
           </section>
 
           <footer className="pt-10 pb-10 flex flex-col items-center gap-4 text-center opacity-30">
-            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // WCX CLOUD SERVER // OLLAMA CLOUD INFRASTRUCTURE</p>
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // WCX CLOUD SERVER // PRIVATE ENDPOINT</p>
           </footer>
         </div>
       </main>
