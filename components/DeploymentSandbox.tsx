@@ -11,17 +11,18 @@ interface DeploymentSandboxProps {
 
 const getLogMessages = (brand: string, model: string) => [
   `Initializing ${brand} Sandbox Environment...`,
-  "Authenticating with WCX CLOUD SERVER nodes...",
-  `Provisioning ${model} reasoning engine...`,
-  "Allocating neural compute shaders...",
+  "Authenticating with WCX CLOUD SERVER remote host...",
+  `Executing: ollama pull ${model.toLowerCase().replace(/\s/g, '-')}-cloud`,
+  "Provisioning cloud-only offloading logic...",
+  "Allocating neural compute shaders in OLLAMA cluster...",
   "Syncing Edge DB: aws-1-ap-south-1.pooler.supabase.co",
   "Encrypting PII data with AES-256...",
-  "Scaling pod groups to performance tier...",
-  "Optimizing Bio-Sync API throughput...",
+  "Scaling WCX pod groups to performance tier...",
+  "Optimizing OLLAMA Cloud API throughput...",
   `Applying whitelabel branding: ${brand} Identity...`,
   "Verifying organizational resilience thresholds...",
   "Hot-swapping strategy kernels...",
-  "Deployment Finalized. Edge nodes online."
+  "Deployment Finalized. WCX CLOUD edge nodes online."
 ];
 
 export const DeploymentSandbox: React.FC<DeploymentSandboxProps> = ({ isOpen, onClose, brandName, modelName, isDarkMode }) => {
@@ -78,7 +79,7 @@ export const DeploymentSandbox: React.FC<DeploymentSandboxProps> = ({ isOpen, on
               <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
             </div>
             <span className={`text-[10px] font-black uppercase tracking-[0.3em] ml-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-              Sandbox Node: {brandName} // {modelName}
+              WCX Node: {brandName} // {modelName}
             </span>
           </div>
           {isComplete && (
@@ -104,7 +105,7 @@ export const DeploymentSandbox: React.FC<DeploymentSandboxProps> = ({ isOpen, on
           {!isComplete && (
             <div className="animate-pulse mt-2 flex items-center gap-2">
               <div className="w-1.5 h-3 bg-emerald-500" />
-              <span className="italic opacity-50">Processing script...</span>
+              <span className="italic opacity-50">Offloading to OLLAMA Cloud...</span>
             </div>
           )}
         </div>
@@ -114,10 +115,10 @@ export const DeploymentSandbox: React.FC<DeploymentSandboxProps> = ({ isOpen, on
           <div className="flex justify-between items-end">
             <div>
               <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                {isComplete ? 'Deployment Finished' : 'Synchronizing Clusters'}
+                {isComplete ? 'WCX SYNC COMPLETE' : 'Establishing OLLAMA Cloud Link'}
               </p>
               <h4 className="text-xl font-black tracking-tighter">
-                {isComplete ? 'System Online' : `Deploying ${brandName}`}
+                {isComplete ? 'Node Online' : `Deploying ${brandName}`}
               </h4>
             </div>
             <span className="text-sm font-mono font-bold">{Math.round(progress)}%</span>
@@ -132,7 +133,7 @@ export const DeploymentSandbox: React.FC<DeploymentSandboxProps> = ({ isOpen, on
           
           {isComplete && (
             <p className="text-[10px] font-bold text-center text-emerald-500 uppercase tracking-widest animate-bounce pt-2">
-              ✓ All {brandName} edge nodes synchronized
+              ✓ All {brandName} WCX edge nodes synchronized
             </p>
           )}
         </div>

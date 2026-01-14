@@ -58,7 +58,7 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2 mb-2">
-                <span className={`text-[10px] font-black uppercase tracking-[0.5em] ${isDarkMode ? 'text-teal-500/80' : 'text-teal-600'}`}>Authenticated Node</span>
+                <span className={`text-[10px] font-black uppercase tracking-[0.5em] ${isDarkMode ? 'text-teal-500/80' : 'text-teal-600'}`}>WCX Node Authenticated</span>
                 <div className={`w-1 h-1 rounded-full animate-pulse ${isDarkMode ? 'bg-teal-500' : 'bg-teal-600'}`} />
               </div>
               <h3 className={`text-4xl font-black tracking-tighter uppercase leading-none ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>
@@ -70,14 +70,14 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
               
               <div className="flex flex-wrap items-center gap-3 mt-6">
                 <div className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Kernel</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>OLLAMA Cloud ID</span>
                   <span className={`text-[10px] font-mono font-bold ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`}>{activeEngine.modelName}</span>
                 </div>
                 <div className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Status</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Mode</span>
                   <span className="text-[10px] font-black uppercase text-emerald-500 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-                    {activeEngine.status}
+                    {activeEngine.modelName.includes('v3') ? 'High Reasoning (Thinking)' : 'Fast Response'}
                   </span>
                 </div>
               </div>
@@ -88,9 +88,9 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
         {/* Latency Performance Meter */}
         <div className={`p-10 rounded-[3rem] flex flex-col justify-center relative overflow-hidden border transition-all ${cardClasses}`}>
           <div className="absolute top-0 right-0 p-8 opacity-5">
-            <span className="text-6xl font-black">Hz</span>
+            <span className="text-6xl font-black">WCX</span>
           </div>
-          <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Process Latency</p>
+          <p className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Offload Latency</p>
           <div className="flex items-baseline gap-2">
             <p className={`text-5xl font-black tracking-tighter font-mono ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{activeEngine.latency}</p>
             <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>ms</span>
@@ -98,11 +98,11 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
           <div className={`mt-6 w-full h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
              <div 
                className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all duration-1000" 
-               style={{ width: '85%' }} 
+               style={{ width: activeEngine.modelName.includes('v3') ? '35%' : '95%' }} 
              />
           </div>
           <p className={`text-[9px] font-bold uppercase tracking-widest mt-4 ${isDarkMode ? 'text-emerald-500/60' : 'text-emerald-600'}`}>
-            Optimized by WCX Neural Fabric
+            Optimized by WCX CLOUD Neural Fabric
           </p>
         </div>
       </div>
@@ -156,7 +156,7 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
                 </RadarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 group-hover:opacity-10 transition-opacity">
-                 <span className="text-6xl">⚡</span>
+                 <span className="text-6xl text-teal-500">WCX</span>
               </div>
             </div>
 
@@ -172,7 +172,7 @@ export const ApexModule: React.FC<ApexModuleProps> = ({ activeEngine, isDarkMode
             </div>
             
             <button className={`mt-8 w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 border group-hover:shadow-[0_0_20px_rgba(20,184,166,0.2)] ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/5 text-teal-400' : 'bg-black text-white hover:bg-gray-800 border-black'}`}>
-              Secure Bio-Sync Tunnel
+              Establish OLLAMA Remote Sync
             </button>
           </div>
         ))}

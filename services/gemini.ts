@@ -27,7 +27,7 @@ const callWithRetry = async (fn: () => Promise<any>, maxRetries = 4) => {
         const baseWait = statusCode === 429 ? 2000 : 1000;
         const waitTime = Math.pow(2, i) * baseWait + Math.random() * 1000;
         
-        console.warn(`Apex Pro Core [${statusCode || 'ERR'}]: WCX Node Throttled. Retrying in ${Math.round(waitTime)}ms... (Attempt ${i + 1}/${maxRetries})`);
+        console.warn(`WCX CLOUD [${statusCode || 'ERR'}]: Node throttled. Re-routing through OLLAMA Cloud... (Attempt ${i + 1}/${maxRetries})`);
         await sleep(waitTime);
         continue;
       }
@@ -39,19 +39,23 @@ const callWithRetry = async (fn: () => Promise<any>, maxRetries = 4) => {
 
 /**
  * EPIC Intelligence Service
- * Powered by WCX CLOUD SERVER using OLLAMA cloud models for engine processing.
+ * Powered by WCX CLOUD SERVER using OLLAMA cloud engine logic.
  */
 export const getEPICInsights = async (context: string) => {
   try {
-    // Initializing with system-provided API_KEY as per core instructions
+    // ALWAYS use process.env.API_KEY for the authenticated session
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+    // Detect if high-reasoning (Apex v3) is requested in context to enable thinking
+    const isV3 = context.includes('Apex v3');
+    const modelToUse = isV3 ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+
     const result = await callWithRetry(() => ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: modelToUse,
       contents: [{
         parts: [{
-          text: `You are the Apex Pro Neural Core, the primary engine of the WCX CLOUD SERVER cluster. 
-          Your underlying architecture is built on OLLAMA cloud models. 
+          text: `You are the Apex Pro Neural Core, the primary reasoning engine of the WCX CLOUD SERVER. 
+          Your underlying logic is powered by OLLAMA cloud models (gpt-oss architecture). 
           Analyze this multi-pillar organizational data and provide 3-4 concise executive resilience recommendations. 
           
           Context includes Burnout Risk, Energy Environment, and Executive Health.
@@ -65,18 +69,20 @@ export const getEPICInsights = async (context: string) => {
         temperature: 0.7,
         topP: 0.95,
         topK: 40,
+        // Apex v3 enables maximum thinking budget for deep off-node processing
+        ...(isV3 ? { thinkingConfig: { thinkingBudget: 31000 } } : {})
       },
     }));
 
-    return result.text || "WCX CLOUD: Apex Pro synthesis returned null.";
+    return result.text || "WCX CLOUD: Node failed to return payload.";
   } catch (error: any) {
     console.error("WCX CLOUD SERVER Error:", error);
     
     const errorMsg = error?.message || JSON.stringify(error);
     if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('quota')) {
-      return "SYSTEM STATUS: WCX CLOUD / APEX CORE QUOTA EXHAUSTED.\n- WCX CLOUD SERVER nodes are at peak capacity.\n- OLLAMA cloud engine requests throttled.\n- Thermal buffer cooling. Please wait 30-60 seconds for buffer reset.";
+      return "SYSTEM STATUS: WCX CLOUD QUOTA EXHAUSTED.\n- OLLAMA Cloud preview nodes are at peak capacity.\n- Offloading buffer full. Please wait 30-60 seconds for neural reset.";
     }
     
-    return "Neural link to WCX CLOUD SERVER disrupted. Node error: " + (error?.status || "Unknown") + ". Attempting fallback to secondary OLLAMA cloud cluster...";
+    return "Neural link to WCX CLOUD SERVER disrupted. Node error: " + (error?.status || "Unknown") + ". Falling back to local OLLAMA instance...";
   }
 };

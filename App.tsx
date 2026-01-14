@@ -18,7 +18,7 @@ const App: React.FC = () => {
   
   const loadingRef = useRef(false);
 
-  // Whitelabeled AI Configuration: Apex Pro (WCX CLOUD SERVER / OLLAMA cloud engine)
+  // Whitelabeled AI Configuration: Apex Pro (WCX CLOUD SERVER)
   const [aiConfig, setAiConfig] = useState<AIEngineConfig>({
     brandName: "Apex Pro",
     modelName: "Apex v1 (Gemini 3 Pro)",
@@ -35,7 +35,7 @@ const App: React.FC = () => {
     loadingRef.current = true;
     setLoadingInsights(true);
     
-    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: WCX CLOUD SERVER / OLLAMA Cloud.`;
+    const context = `Pillar: ${activePillar}. Engine: ${aiConfig.brandName} (${aiConfig.modelName}). System Health: ${aiConfig.status}. Infrastructure: WCX CLOUD SERVER (OLLAMA Cloud).`;
     const insights = await getEPICInsights(context);
     
     setAiInsights(insights || "No data synthesized.");
@@ -50,7 +50,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchInsights();
-  }, [activePillar]);
+  }, [activePillar, aiConfig.modelName]); // Re-fetch when pillar or engine changes
 
   // Cooldown timer logic
   useEffect(() => {
@@ -72,7 +72,7 @@ const App: React.FC = () => {
       brandName: brand, 
       modelName: model, 
       provider: provider,
-      latency: `${Math.floor(Math.random() * 5) + 8}ms` 
+      latency: model.includes('v3') ? '185ms' : '12ms' // v3 is high-reasoning, higher latency
     }));
   };
 
@@ -153,6 +153,7 @@ const App: React.FC = () => {
                 >
                   <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-white' : 'text-[#1D1D1F]'}`}>{engine.brand}</p>
                   <p className="text-[8px] font-mono uppercase text-slate-500">{engine.model}</p>
+                  {engine.model.includes('v3') && <span className="text-[7px] font-black text-teal-400 uppercase tracking-widest mt-1 block">Thinking Enabled</span>}
                 </button>
               ))}
             </div>
@@ -168,7 +169,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className={`p-2 rounded-lg border text-[9px] font-mono ${isDarkMode ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-black/5 border-[#D2D2D7] text-slate-600'}`}>
-            DB: {DB_HOST.substring(0, 16)}...
+            WCX: {aiConfig.latency} // CLOUD_SYNC
           </div>
         </div>
       </aside>
@@ -208,7 +209,7 @@ const App: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
                   <h3 className="text-2xl font-black tracking-tight mb-1">{aiConfig.brandName} Synthesis</h3>
-                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Resilience modeling via OLLAMA cloud engine on WCX nodes.</p>
+                  <p className={`font-medium text-sm italic ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>Resilience modeling via OLLAMA Cloud on WCX nodes.</p>
                 </div>
                 <button 
                   onClick={fetchInsights} 
@@ -245,7 +246,7 @@ const App: React.FC = () => {
           </section>
 
           <footer className="pt-10 pb-10 flex flex-col items-center gap-4 text-center opacity-30">
-            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // WCX CLOUD SERVER // OLLAMA ENGINE INFRASTRUCTURE</p>
+            <p className="text-[9px] font-black tracking-[0.4em] uppercase">{aiConfig.brandName} // WCX CLOUD SERVER // OLLAMA CLOUD INFRASTRUCTURE</p>
           </footer>
         </div>
       </main>
